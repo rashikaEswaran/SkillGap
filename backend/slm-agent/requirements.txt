@@ -1,0 +1,42 @@
+# CurriculumIQ SLM Agent - Python Dependencies
+
+# Core ML & Transformers
+torch>=2.0.0
+transformers>=4.35.0
+accelerate>=0.24.0
+sentencepiece>=0.1.99
+
+# Web Search & Scraping
+ddgs>=7.0.0
+duckduckgo-search>=4.1.0
+beautifulsoup4>=4.12.0
+requests>=2.31.0
+lxml>=4.9.0
+
+# Firebase Admin
+firebase-admin>=6.2.0
+
+# Flask API Server
+flask>=3.0.0
+flask-cors>=4.0.0
+
+# Google Gemini AI
+google-generativeai>=0.3.0
+
+# PDF Processing (for syllabus parsing)
+PyPDF2>=3.0.0
+pdfplumber>=0.10.0
+
+# NLP Utilities
+spacy>=3.7.0
+nltk>=3.8.0
+
+# Data Processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Optional: GPU Support (uncomment if you have NVIDIA GPU)
+# torch-cuda>=2.0.0
+
+# Development
+python-dotenv>=1.0.0
