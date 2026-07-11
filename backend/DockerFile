@@ -1,0 +1,28 @@
+FROM python:3.10-slim
+
+# Set the working directory
+WORKDIR /app
+
+# Install system dependencies that some ML libraries might need
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy the requirements file first (for caching)
+COPY slm-agent/requirements.txt requirements.txt
+
+# Install dependencies, plus gunicorn (a production web server)
+RUN pip install --no-cache-dir -r requirements.txt gunicorn
+
+# Copy all your backend files into the container
+COPY . .
+
+# Hugging Face Spaces run on port 7860 by default
+EXPOSE 7860
+
+# Set environment variables to prevent Python from buffering stdout/stderr
+ENV PYTHONUNBUFFERED=1
+
+# Command to run the Flask app using Gunicorn on port 7860
+# Note: This expects your file to be named slm_server.py and the Flask app variable to be named 'app'
+CMD ["gunicorn", "-b", "0.0.0.0:7860", "--timeout", "120", "slm_server:app"]
