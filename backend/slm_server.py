@@ -37,7 +37,8 @@ from auto_fetcher import get_fetcher
 
 # Initialize Flask app
 app = Flask(__name__)
-CORS(app)  # Enable CORS for Next.js frontend
+# CORS(app)  # Enable CORS for Next.js frontend
+CORS(app, resources={r"/*": {"origins": ["https://skillgapv4.vercel.app", "http://localhost:3000"]}})
 
 # Initialize SLM Agent (singleton)
 agent = None
