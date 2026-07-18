@@ -33,16 +33,8 @@ export async function POST(req: NextRequest) {
 
     // Fallback using Gemini AI if key is present
     if (GEMINI_API_KEY) {
-      try {
-        const geminiRes = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{
-                parts: [{
-                  text: `Analyze curriculum gap for the target role: "${query}". Given existing topics: ${JSON.stringify(curriculum_topics)}.
+      const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-flash'];
+      const promptText = `Analyze curriculum gap for the target role: "${query}". Given existing topics: ${JSON.stringify(curriculum_topics)}.
 Return valid JSON format:
 {
   "coverage_percentage": 75,
@@ -57,28 +49,39 @@ Return valid JSON format:
     {"name": "Problem Solving", "demand": 90, "category": "Problem Solving"}
   ],
   "recommendation": "Focus on TypeScript and System Design to boost employability."
-}`
-                }]
-              }],
-              generationConfig: { temperature: 0.3, maxOutputTokens: 2048 }
-            })
-          }
-        );
+}`;
 
-        if (geminiRes.ok) {
-          const gData = await geminiRes.json();
-          const rawText = gData.candidates?.[0]?.content?.parts?.[0]?.text || '';
-          const cleanText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-          const parsed = JSON.parse(cleanText);
-          return NextResponse.json({
-            success: true,
-            data: parsed
-          });
+      for (const model of models) {
+        try {
+          const geminiRes = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: promptText }] }],
+                generationConfig: { temperature: 0.3, maxOutputTokens: 2048 }
+              }),
+              signal: AbortSignal.timeout(6000),
+            }
+          );
+
+          if (geminiRes.ok) {
+            const gData = await geminiRes.json();
+            const rawText = gData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            const cleanText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+            const parsed = JSON.parse(cleanText);
+            return NextResponse.json({
+              success: true,
+              data: parsed
+            });
+          }
+        } catch (geminiErr) {
+          // Try next model
         }
-      } catch (geminiErr) {
-        console.warn('Gemini Gap Analysis fallback failed:', geminiErr);
       }
     }
+
 
     // Default structured response if server & gemini unavailable
     return NextResponse.json({

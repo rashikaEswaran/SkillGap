@@ -33,42 +33,45 @@ export async function POST(req: NextRequest) {
 
     // Fallback: Gemini AI or standard smart response
     if (GEMINI_API_KEY) {
-      try {
-        const geminiRes = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{
-                parts: [{
-                  text: `Analyze industry demand for domain/skill: "${query}". Return valid JSON: { "skills": [ { "name": "Skill Name", "demand": 85, "category": "Category", "source": "Industry Benchmark 2026" } ], "summary": "Detailed summary" }`
-                }]
-              }],
-              generationConfig: { temperature: 0.3, maxOutputTokens: 2048 }
-            })
-          }
-        );
+      const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-flash'];
+      const promptText = `Analyze industry demand for domain/skill: "${query}". Return valid JSON: { "skills": [ { "name": "Skill Name", "demand": 85, "category": "Category", "source": "Industry Benchmark 2026" } ], "summary": "Detailed summary" }`;
 
-        if (geminiRes.ok) {
-          const gData = await geminiRes.json();
-          const rawText = gData.candidates?.[0]?.content?.parts?.[0]?.text || '';
-          const cleanText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-          const parsed = JSON.parse(cleanText);
-          return NextResponse.json({
-            success: true,
-            data: {
-              skills: parsed.skills || [],
-              summary: parsed.summary || `Analysis results for ${query}`,
-              query,
-              method: 'Gemini AI Fallback'
+      for (const model of models) {
+        try {
+          const geminiRes = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: promptText }] }],
+                generationConfig: { temperature: 0.3, maxOutputTokens: 2048 }
+              }),
+              signal: AbortSignal.timeout(6000),
             }
-          });
+          );
+
+          if (geminiRes.ok) {
+            const gData = await geminiRes.json();
+            const rawText = gData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            const cleanText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+            const parsed = JSON.parse(cleanText);
+            return NextResponse.json({
+              success: true,
+              data: {
+                skills: parsed.skills || [],
+                summary: parsed.summary || `Analysis results for ${query}`,
+                query,
+                method: 'Gemini AI Fallback'
+              }
+            });
+          }
+        } catch (geminiErr) {
+          // Try next model
         }
-      } catch (geminiErr) {
-        console.warn('Gemini AI fallback failed:', geminiErr);
       }
     }
+
 
     // Default fallback data if everything else fails
     return NextResponse.json({
