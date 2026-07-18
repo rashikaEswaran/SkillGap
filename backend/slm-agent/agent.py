@@ -2,6 +2,9 @@
 import json, os, re
 from typing import List, Dict, Optional
 
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning, module="google.generativeai")
+
 # Optional deps
 try:
     import firebase_admin
@@ -29,18 +32,17 @@ class SLMAgent:
         self.use_mock = True  # Needed by /api/model-info
         if GEMINI_AVAILABLE:
             api_key = os.environ.get("GEMINI_API_KEY", "")
-            for name in ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-pro"]:
+            if api_key:
                 try:
                     genai.configure(api_key=api_key)
-                    self.model = genai.GenerativeModel(name)
-                    self.model.generate_content("test")
+                    self.model = genai.GenerativeModel("gemini-1.5-flash")
                     self.use_ai = True
                     self.use_mock = False
-                    break
-                except:
-                    pass  # Try next model
+                except Exception as e:
+                    print(f"[WARN] Gemini model init warning: {e}")
         if FIREBASE_AVAILABLE:
             self._init_firebase()
+
 
     def _init_firebase(self):
         sa_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "service-account.json")

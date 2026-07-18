@@ -1,10 +1,4 @@
-# CurriculumIQ SLM Agent - Python Dependencies
-
-# Core ML & Transformers
-torch>=2.0.0
-transformers>=4.35.0
-accelerate>=0.24.0
-sentencepiece>=0.1.99
+# CurriculumIQ SLM Agent - Lightweight Server Dependencies
 
 # Web Search & Scraping
 ddgs>=7.0.0
@@ -25,18 +19,13 @@ google-generativeai>=0.3.0
 
 # PDF Processing (for syllabus parsing)
 PyPDF2>=3.0.0
-pdfplumber>=0.10.0
 
-# NLP Utilities
-spacy>=3.7.0
-nltk>=3.8.0
-
-# Data Processing
-pandas>=2.0.0
-numpy>=1.24.0
-
-# Optional: GPU Support (uncomment if you have NVIDIA GPU)
-# torch-cuda>=2.0.0
-
-# Development
+# Utilities & Development
 python-dotenv>=1.0.0
+
+# Optional Heavy ML Libraries (Uncomment only if local GPU is available)
+# torch>=2.0.0
+# transformers>=4.35.0
+# accelerate>=0.24.0
+# spacy>=3.7.0
+# pandas>=2.0.0

@@ -23,6 +23,6 @@ EXPOSE 7860
 # Set environment variables to prevent Python from buffering stdout/stderr
 ENV PYTHONUNBUFFERED=1
 
-# Command to run the Flask app using Gunicorn on port 7860
-# Note: This expects your file to be named slm_server.py and the Flask app variable to be named 'app'
-CMD ["gunicorn", "-b", "0.0.0.0:7860", "--timeout", "120", "slm_server:app"]
+# Command to run the Flask app using Gunicorn listening on PORT (defaults to 7860)
+CMD ["sh", "-c", "gunicorn -b 0.0.0.0:${PORT:-7860} --timeout 180 --workers 2 --threads 4 slm_server:app"]
+
