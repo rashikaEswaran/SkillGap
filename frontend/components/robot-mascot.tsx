@@ -31,9 +31,11 @@ export default function RobotMascot() {
     return () => clearInterval(interval);
   }, []);
 
+  const SLM_API_URL = process.env.NEXT_PUBLIC_SLM_API_URL || 'https://skillgaptest-production.up.railway.app';
+
   const fetchStatus = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/fetch-status");
+      const res = await fetch(`${SLM_API_URL}/api/fetch-status`);
       const data = await res.json();
       setStatus(data);
 
@@ -73,7 +75,7 @@ export default function RobotMascot() {
   const handleManualFetch = async () => {
     setAnimationState("fetching");
     try {
-      await fetch("http://localhost:5000/api/auto-fetch", {
+      await fetch(`${SLM_API_URL}/api/auto-fetch`, {
         method: "POST",
       });
       setTooltip("Fetching data from AICTE, LinkedIn, Twitter...");
