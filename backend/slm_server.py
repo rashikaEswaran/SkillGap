@@ -35,10 +35,16 @@ from web_search import search_duckduckgo, batch_search
 from job_scraper import aggregate_jobs
 from auto_fetcher import get_fetcher
 
+if hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
 # Initialize Flask app
 app = Flask(__name__)
-# CORS(app)  # Enable CORS for Next.js frontend
-CORS(app, resources={r"/*": {"origins": ["https://skillgapv4.vercel.app", "http://localhost:3000"]}})
+CORS(app, resources={r"/*": {"origins": "*"}})
+
 
 # Initialize SLM Agent (singleton)
 agent = None
