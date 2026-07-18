@@ -12,9 +12,10 @@ try:
 except ImportError: FIREBASE_AVAILABLE = False
 
 try:
-    import google.generativeai as genai
+    from google import genai
     GEMINI_AVAILABLE = True
-except ImportError: GEMINI_AVAILABLE = False
+except ImportError:
+    GEMINI_AVAILABLE = False
 
 def _extract_domain(url):
     try:
@@ -25,7 +26,7 @@ def _extract_domain(url):
 
 class SLMAgent:
     def __init__(self):
-        self.model = None
+        self.client = None
         self.db = None
         self.use_ai = False
         self.use_mock = True  # Needed by /api/model-info
@@ -33,14 +34,14 @@ class SLMAgent:
             api_key = os.environ.get("GEMINI_API_KEY", "")
             if api_key:
                 try:
-                    genai.configure(api_key=api_key)
-                    self.model = genai.GenerativeModel("gemini-1.5-flash")
+                    self.client = genai.Client(api_key=api_key)
                     self.use_ai = True
                     self.use_mock = False
                 except Exception as e:
-                    print(f"[WARN] Gemini model init warning: {e}")
+                    print(f"[WARN] Gemini client init warning: {e}")
         if FIREBASE_AVAILABLE:
             self._init_firebase()
+
 
 
     def _init_firebase(self):
@@ -87,15 +88,21 @@ class SLMAgent:
         return [{"title": f"{query} Skills 2026", "body": f"Industry demand for {query} professionals continues to grow.", "href": "https://linkedin.com/jobs", "source": "LinkedIn"}]
 
     def _ai_analyze(self, content: str, query: str) -> Optional[Dict]:
-        if not self.model:
+        if not self.client:
             return None
         p = f"Analyze '{query}' industry content. Extract top skills. Return JSON: {{'skills':[{{'name':'Skill','demand':85}}], 'summary':'text'}} Content: {content[:3000]}"
         try:
-            t = self.model.generate_content(p).text.strip()
+            response = self.client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=p,
+            )
+            t = response.text.strip()
             m = re.search(r"\{.*\}", t, re.DOTALL)
             return json.loads(m.group()) if m else None
-        except:
+        except Exception as e:
+            print(f"[WARN] Gemini AI analysis error: {e}")
             return None
+
 
     def _rule_based_analyze(self, query: str, search_results: List[Dict]) -> Dict:
         skills_found = {}

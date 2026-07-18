@@ -15,9 +15,10 @@ try:
 except: FIREBASE_AVAILABLE = False
 
 try:
-    import google.generativeai as genai
+    from google import genai
     GEMINI_AVAILABLE = True
 except: GEMINI_AVAILABLE = False
+
 
 
 def _extract_domain(url):
