@@ -6,6 +6,9 @@ Exposes SLM functionality as REST API for Next.js frontend
 
 import sys
 import os
+import warnings
+warnings.simplefilter("ignore")
+
 
 # Load environment variables from backend/.env BEFORE importing the agent
 # (agent.py reads GEMINI_API_KEY at import time via os.environ)

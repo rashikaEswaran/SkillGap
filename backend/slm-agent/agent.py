@@ -1,9 +1,8 @@
 """CurriculumIQ - SLM Agent for curriculum analysis."""
-import json, os, re
+import json, os, re, warnings
+warnings.simplefilter("ignore")
 from typing import List, Dict, Optional
 
-import warnings
-warnings.filterwarnings("ignore", category=FutureWarning, module="google.generativeai")
 
 # Optional deps
 try:
