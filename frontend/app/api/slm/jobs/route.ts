@@ -17,6 +17,7 @@ export async function POST(req: NextRequest) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ skill, platforms, limit }),
+        signal: AbortSignal.timeout(6000),
       });
 
       if (response.ok) {
@@ -26,6 +27,7 @@ export async function POST(req: NextRequest) {
     } catch (fetchErr) {
       console.warn('Jobs API fetch failed, returning structured fallback:', fetchErr);
     }
+
 
     return NextResponse.json({
       success: true,

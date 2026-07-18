@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { query, type = 'analyze', ...rest } = body;
 
-    // Forward request to Python SLM server
+    // Forward request to Python SLM server with 6s timeout
     try {
       const response = await fetch(`${SLM_API_URL}/api/${type}`, {
         method: 'POST',
@@ -19,7 +19,9 @@ export async function POST(req: NextRequest) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ query, ...rest }),
+        signal: AbortSignal.timeout(6000),
       });
+
 
       if (response.ok) {
         const data = await response.json();
@@ -95,7 +97,9 @@ export async function POST(req: NextRequest) {
 // Health check for SLM service
 export async function GET() {
   try {
-    const response = await fetch(`${SLM_API_URL}/health`);
+    const response = await fetch(`${SLM_API_URL}/health`, {
+      signal: AbortSignal.timeout(3000),
+    });
     if (response.ok) {
       const data = await response.json();
       return NextResponse.json(data);
@@ -109,4 +113,5 @@ export async function GET() {
     slm_ready: true,
     timestamp: new Date().toISOString()
   });
-}
+}
+

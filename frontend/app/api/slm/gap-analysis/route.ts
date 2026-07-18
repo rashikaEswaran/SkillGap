@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { query, curriculum_topics = [] } = body;
 
-    // Try forwarding to Railway Python SLM server
+    // Try forwarding to Railway Python SLM server with 6s timeout
     try {
       const response = await fetch(`${SLM_API_URL}/api/gap-analysis`, {
         method: 'POST',
@@ -19,7 +19,9 @@ export async function POST(req: NextRequest) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ query, curriculum_topics }),
+        signal: AbortSignal.timeout(6000),
       });
+
 
       if (response.ok) {
         const data = await response.json();
